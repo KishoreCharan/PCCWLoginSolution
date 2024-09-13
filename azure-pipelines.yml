@@ -15,7 +15,12 @@ steps:
     packageType: 'sdk'
     version: '8.x' # Specify the .NET SDK version you need
     installationPath: $(Agent.ToolsDirectory)/dotnet
-# Add required NuGet packages
+
+- script: |
+    dotnet restore
+    dotnet build --configuration Release
+  displayName: 'Restore, Build'
+  # Add required NuGet packages
 - script: |
     dotnet add package coverlet.collector --version 6.0.0
     dotnet add package DotNetSeleniumExtras.PageObjects --version 3.11.0
@@ -30,10 +35,6 @@ steps:
     dotnet add package System.Configuration.ConfigurationManager --version 8.0.0
     dotnet add package WebDriverManager --version 2.17.4
   displayName: 'Install NuGet Packages'
-- script: |
-    dotnet restore
-    dotnet build --configuration Release
-  displayName: 'Restore, Build'
 
 - script: |
     dotnet test --configuration Release --results-directory $(Build.ArtifactStagingDirectory)/test-results
