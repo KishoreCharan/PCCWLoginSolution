@@ -1,0 +1,43 @@
+# .NET Core
+# Build your .NET Core project and run tests with NUnit.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest' # Change to 'windows-latest' if required
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '7.x' # Specify the .NET SDK version you are using
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- script: |
+    dotnet restore
+    dotnet build --configuration Release
+  displayName: 'Restore, Build'
+
+- script: |
+    dotnet test --configuration Release --results-directory $(Build.ArtifactStagingDirectory)/test-results
+  displayName: 'Run Tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-results/*.xml'
+    mergeTestResults: true
+    testRunTitle: 'Publish Test Results'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: '**/*.dll' # Adjust if you have different output files
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
